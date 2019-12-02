@@ -78,16 +78,20 @@ server.delete("/api/users/:id", (req, res) => {
 server.put("/api/users/:id", (req, res) => {
     const id = req.params.id;
     const userData = req.body;
-    if (!userData.name || !userData.bio) {
+
+    db.findById(id)
+        .then(users => {
+            if(!users) {
+                res.status(404).json({ message: "The user with the specified ID does not exist." })
+            }
+        })
+    
+        if (!userData.name || !userData.bio) {
         res.status(400).json({ errorMessage: "Please provide name and bio for the user." });
     } else {
         db.update(id, userData)
             .then(userData => {
-                if (userData) {
-                    res.status(200).json({ message: "user updated successfully", userData });
-                } else {
-                    res.status(404).json({ message: "The user with the specified ID does not exist." });
-                }
+                res.status(200).json({ message: "user updated successfully", userData });
             })
             .catch(error => {
                 console.log(`error on PUT /api/users/${id}`, error);
